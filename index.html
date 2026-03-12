@@ -1,0 +1,482 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta name="viewport" content="width=1200, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title> ❤عيد سعيد </title>	    
+    <link type="text/css" rel="stylesheet" href="file/default.css">
+    <script type="text/javascript" src="file/jquery.min.js"></script>
+    <script type="text/javascript" src="file/jscex.min.js"></script>
+    <script type="text/javascript" src="file/jscex-parser.js"></script>
+    <script type="text/javascript" src="file/jscex-jit.js"></script>
+    <script type="text/javascript" src="file/jscex-builderbase.min.js"></script>
+    <script type="text/javascript" src="file/jscex-async.min.js"></script>
+    <script type="text/javascript" src="file/jscex-async-powerpack.min.js"></script>
+    <script type="text/javascript" src="file/function.js" charset="utf-8"></script>
+    <script type="text/javascript" src="file/love.js" charset="utf-8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <audio id="fireworksAudio" src="fireworks.mp3" preload="auto"></audio>
+
+    <script>
+        /* ===== FIX 3: الأغنية والألعاب النارية تشتغل فقط عند الضغط على القلب ===== */
+        /* نحذف autoplay من الـ audio tag ونتحكم فيه هنا */
+        var audioStarted = false;
+
+        function startAudioAndFireworks() {
+            if (audioStarted) return;
+            audioStarted = true;
+
+            /* تشغيل الأغنية الأصلية */
+            var audio = document.getElementById("myAudio");
+            audio.play();
+
+            /* تشغيل صوت الألعاب النارية */
+            var fwAudio = document.getElementById("fireworksAudio");
+            fwAudio.loop = true;
+            fwAudio.volume = 1.0;
+            fwAudio.play();
+
+            /* خفض صوت الألعاب بعد 5 ثواني */
+            setTimeout(function() { fwAudio.volume = 0.4; }, 5000);
+
+            /* إيقاف صوت الألعاب بعد 50 ثانية */
+            setTimeout(function() {
+                fwAudio.pause();
+                fwAudio.currentTime = 0;
+            }, 50000);
+
+            /* الألعاب النارية */
+            var duration = 50 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 5, spread: 360, ticks: 100, zIndex: 9999 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+                var particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+    </script>
+
+    <style>
+        /* ===== FIXED SIZE LAYOUT ===== */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+    margin: 0;
+    min-height: 100vh;
+
+    background-image: url("background.gif");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+        #main {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* ===== FIX 1: زيادة عرض المربع على PC ===== */
+        #wrap {
+            width: 1200px !important;   /* كان 1020px - زدناه */
+            height: 720px !important;   /* كان 680px - زدناه قليلاً */
+            z-index: 10;
+            background-color: rgba(0, 0, 0, 0.6) !important;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform-origin: center center;
+            transform: scale(var(--scale-factor, 1));
+            flex-shrink: 0;
+        }
+
+        /* ===== FIX 1: الكانفاس أيضاً يتوسع مع المربع ===== */
+        #canvas {
+            z-index: 11;
+            width: 1200px !important;
+            height: 720px !important;
+            max-width: none !important;
+            max-height: none !important;
+        }
+
+        .say {
+            color: white !important;
+            text-shadow: 1px 1px 2px black;
+            font-weight: bold;
+        }
+
+        #code {
+            font-size: 24px !important;
+            line-height: 1.6;
+            font-family: "Arial", sans-serif;
+            color: white !important;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            direction: rtl !important;
+            text-align: right !important;
+            white-space: nowrap;
+            display: none;
+        }
+
+        /* ===== FIX 4: مساحة ضغط أكبر للقلب على الجوال ===== */
+        #canvas {
+            touch-action: manipulation;
+        }
+        /* overlay شفاف فوق منطقة القلب يكبر مساحة اللمس */
+        #heart-touch-area {
+            display: none; /* يظهر فقط على الجوال */
+            position: absolute;
+            z-index: 100;
+            cursor: pointer;
+        }
+        @media (pointer: coarse) {
+            #heart-touch-area {
+                display: block;
+            }
+        }
+    
+        /* ===== زر الشاشة الكاملة ===== */
+        #fullscreen-btn {
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            background: rgba(0,0,0,0.55);
+            color: white;
+            border: 1.5px solid rgba(255,255,255,0.35);
+            border-radius: 30px;
+            padding: 8px 22px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            transition: background 0.2s, opacity 0.3s;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        #fullscreen-btn:hover { background: rgba(255,100,150,0.5); }
+        #fullscreen-btn.fade-out { opacity: 0; pointer-events: none; }
+</style>
+
+    <script>
+        /* ===== FIX 2: حساب نسبة التكبير/التصغير - PC + جوال (طولي وعرضي) ===== */
+        function updateScale() {
+            var BASE_W = 1000;  /* يجب أن يطابق عرض #wrap */
+            var BASE_H = 720;   /* يجب أن يطابق ارتفاع #wrap */
+            var PADDING = 16;
+
+            var vw = (window.visualViewport ? window.visualViewport.width  : window.innerWidth)  - PADDING;
+            var vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight) - PADDING;
+
+
+            var scaleX = vw / BASE_W;
+            var scaleY = vh / BASE_H;
+
+            /* على PC: لا يكبر فوق 1 | على الجوال: يصغر ليتناسب مع أي اتجاه */
+            var isMobile = window.innerWidth <= 1024;
+            var maxScale = isMobile ? 2 : 1;  /* على الجوال نسمح له يكبر إذا احتاج */
+            var scale = Math.min(scaleX, scaleY, maxScale);
+
+            document.documentElement.style.setProperty('--scale-factor', scale);
+        }
+
+        updateScale();
+        window.addEventListener('resize', updateScale);
+        window.addEventListener('orientationchange', function() {
+            setTimeout(updateScale, 300);
+        });
+
+        /* ===== منطق زر الشاشة الكاملة ===== */
+        var fsTimer = null;
+        function toggleFullscreen() {
+            var btn = document.getElementById('fullscreen-btn');
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                var el = document.documentElement;
+                if (el.requestFullscreen) el.requestFullscreen();
+                else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+                btn.textContent = '✕  خروج من الشاشة الكاملة';
+                clearTimeout(fsTimer);
+                fsTimer = setTimeout(function() { btn.classList.add('fade-out'); }, 3000);
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                btn.textContent = '⛶  شاشة كاملة';
+                clearTimeout(fsTimer);
+                btn.classList.remove('fade-out');
+            }
+        }
+        function showFsBtn() {
+            var btn = document.getElementById('fullscreen-btn');
+            if (!btn) return;
+            btn.classList.remove('fade-out');
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                clearTimeout(fsTimer);
+                fsTimer = setTimeout(function() { btn.classList.add('fade-out'); }, 3000);
+            }
+        }
+        document.addEventListener('mousemove', showFsBtn);
+        document.addEventListener('touchstart', showFsBtn);
+        document.addEventListener('fullscreenchange', function() {
+            var btn = document.getElementById('fullscreen-btn');
+            if (!document.fullscreenElement) { btn.textContent = '⛶  شاشة كاملة'; btn.classList.remove('fade-out'); clearTimeout(fsTimer); }
+            updateScale();
+        });
+        document.addEventListener('webkitfullscreenchange', function() {
+            var btn = document.getElementById('fullscreen-btn');
+            if (!document.webkitFullscreenElement) { btn.textContent = '⛶  شاشة كاملة'; btn.classList.remove('fade-out'); clearTimeout(fsTimer); }
+            updateScale();
+        });
+    </script>
+</head>
+<body>
+    <!-- زر الشاشة الكاملة -->
+    <button id="fullscreen-btn" onclick="toggleFullscreen()">⛶  شاشة كاملة</button>
+
+    <div id="main">
+        <div id="error">يرجى استخدام متصفح حديث</div>
+
+        <!-- FIX 3: إزالة autoplay - الصوت يشتغل فقط عند الضغط على القلب -->
+        <audio height="0" width="0" id="myAudio">
+            <source src="aud.mp3" type="audio/mp3" />
+        </audio>
+
+        <div id="wrap">
+            <div id="text">
+                <div id="code">
+                    <span class="say">  السلام عليكم ورحمة الله وبركاته 💞</span><br>
+                     <span class="say">كيفك جوجيي يانور عيني 🎈</span><br>
+                    <span class="say">كل عام وانتي بخير 🎈</span><br>
+                    <span class="say">كل سنة وانتي طيبة 🍀</span><br>
+                    <span class="say">حفظك الله من كل سوء 💕</span><br>
+                    <span class="say">كل سنة وانتي سندي في الحياة ❤️</span><br>
+    
+                  <span class="say">انتي نعمة من الله  ❤️😘</span><br>
+                </div>
+            </div>
+            <div id="clock-box">
+                <span id="clock">577 days 0 hours 0 minutes 0 seconds</span>
+            </div>
+            <!-- FIX 4: div شفاف فوق منطقة القلب يكبر مساحة اللمس على الجوال -->
+            <div id="heart-touch-area"></div>
+            <canvas id="canvas" width="1200" height="720"></canvas>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        var canvas = $('#canvas');
+
+        if (!canvas[0].getContext) {
+            $("#error").show();
+            return false;
+        }
+
+        var width = canvas.width();
+        var height = canvas.height();
+        canvas.attr("width", width);
+        canvas.attr("height", height);
+
+        // إصلاح 1: seed.x = 535 نفس موقع جذع الشجرة
+        // إصلاح 2: bloom.width = 1070 تتمركز الورق حول الشجرة
+        var TREE_X = 535;
+
+        var opts = {
+            seed: {
+                x: TREE_X,
+                color: "rgb(190, 26, 37)",
+                scale: 2
+            },
+            branch: [
+                [535, 680, 570, 250, 500, 200, 30, 100, [
+                    [540, 500, 455, 417, 340, 400, 13, 100, [
+                        [450, 435, 434, 430, 394, 395, 2, 40]
+                    ]],
+                    [550, 445, 600, 356, 680, 345, 12, 100, [
+                        [578, 400, 648, 409, 661, 426, 3, 80]
+                    ]],
+                    [539, 281, 537, 248, 534, 217, 3, 40],
+                    [546, 397, 413, 247, 328, 244, 9, 80, [
+                        [427, 286, 383, 253, 371, 205, 2, 40],
+                        [498, 345, 435, 315, 395, 330, 4, 60]
+                    ]],
+                    [546, 357, 608, 252, 678, 221, 6, 100, [
+                        [590, 293, 646, 277, 648, 271, 2, 80]
+                    ]]
+                ]]
+            ],
+            bloom: {
+                num: 700,
+                width: TREE_X * 2,
+                height: 700,
+            },
+            footer: {
+                width: 1300,
+                height: 5,
+                speed: 10,
+            }
+        }
+
+        var tree = new Tree(canvas[0], width, height, opts);
+        var seed = tree.seed;
+        var foot = tree.footer;
+        var hold = 1;
+
+        /* ===== FIX 4: دالة موحدة تتعامل مع اللمس والكليك ===== */
+        function handleInteraction(x, y) {
+            /* على الجوال: نكبّر منطقة اكتشاف القلب بمقدار 2.5x */
+            var isMobile = ('ontouchstart' in window);
+            var hitRadius = isMobile ? 2.5 : 1;
+
+            /* نحسب المسافة من مركز القلب المرسوم تقريباً */
+            var heartCenterX = seed.heart.point.x;
+            var heartCenterY = seed.heart.point.y;
+            var dist = Math.sqrt(Math.pow(x - heartCenterX, 2) + Math.pow(y - heartCenterY, 2));
+            var heartSize = 45 * seed.heart.scale; /* حجم القلب التقريبي */
+
+            var isHit = dist < heartSize * hitRadius || seed.hover(x, y);
+
+            if (isHit && hold === 1) {
+                hold = 0;
+                startAudioAndFireworks(); /* FIX 3: تشغيل الصوت والألعاب */
+                canvas.unbind("click");
+                canvas.unbind("mousemove");
+                canvas.removeClass('hand');
+                $('#heart-touch-area').hide();
+            }
+        }
+
+        /* كليك للماوس */
+        canvas.click(function(e) {
+            var offset = canvas.offset();
+            var x = e.pageX - offset.left;
+            var y = e.pageY - offset.top;
+            handleInteraction(x, y);
+        });
+
+        /* لمس الجوال */
+        canvas[0].addEventListener('touchend', function(e) {
+            e.preventDefault();
+            var offset = canvas.offset();
+            var touch = e.changedTouches[0];
+            var scaleFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--scale-factor')) || 1;
+            var x = (touch.pageX - offset.left) / scaleFactor;
+            var y = (touch.pageY - offset.top) / scaleFactor;
+            handleInteraction(x, y);
+        }, { passive: false });
+
+        /* حركة الماوس لإظهار المؤشر */
+        canvas.mousemove(function(e) {
+            var offset = canvas.offset(), x, y;
+            x = e.pageX - offset.left;
+            y = e.pageY - offset.top;
+            canvas.toggleClass('hand', seed.hover(x, y));
+        });
+
+        /* ===== FIX 4: ضبط div اللمس فوق القلب تلقائياً ===== */
+        function updateTouchArea() {
+            var scaleFactor = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--scale-factor')) || 1;
+            var offset = canvas.offset();
+            var heartX = seed.heart.point.x * scaleFactor + offset.left;
+            var heartY = seed.heart.point.y * scaleFactor + offset.top;
+            var size = 120; /* حجم منطقة اللمس بالبيكسل على الشاشة */
+            $('#heart-touch-area').css({
+                left: (heartX - size/2) + 'px',
+                top:  (heartY - size/2) + 'px',
+                width:  size + 'px',
+                height: size + 'px',
+                position: 'fixed'
+            });
+        }
+
+        var seedAnimate = eval(Jscex.compile("async", function () {
+            seed.draw();
+            while (hold) {
+                $await(Jscex.Async.sleep(10));
+            }
+            while (seed.canScale()) {
+                seed.scale(0.95);
+                $await(Jscex.Async.sleep(10));
+            }
+            while (seed.canMove()) {
+                seed.move(0, 2);
+                foot.draw();
+                $await(Jscex.Async.sleep(10));
+            }
+        }));
+
+        var growAnimate = eval(Jscex.compile("async", function () {
+            do {
+                tree.grow();
+                $await(Jscex.Async.sleep(10));
+            } while (tree.canGrow());
+        }));
+
+        var flowAnimate = eval(Jscex.compile("async", function () {
+            do {
+                tree.flower(2);
+                $await(Jscex.Async.sleep(10));
+            } while (tree.canFlower());
+        }));
+
+        var moveAnimate = eval(Jscex.compile("async", function () {
+            /*
+             * الإصلاح: نأخذ snapshot للكانفاس كله من x=0
+             * ونحركه من x=0 إلى x=260 (نفس مقدار الحركة الأصلية 500-240=260)
+             * فالشجرة تتحرك كاملة بدون قطع من أي جهة
+             */
+            tree.snapshot("p1", 0, 0, width, height);
+            while (tree.move("p1", 260, 0)) {
+                foot.draw();
+                $await(Jscex.Async.sleep(10));
+            }
+            foot.draw();
+            tree.snapshot("p2", 260, 0, width, height);
+            $await(Jscex.Async.sleep(300));
+            canvas.css("background", "none");
+        }));
+
+        var textAnimate = eval(Jscex.compile("async", function () {
+            $("#code").show().typewriter();
+        }));
+
+        var runAsync = eval(Jscex.compile("async", function () {
+            $await(seedAnimate());
+            /* بعد ما القلب يظهر، نضبط منطقة اللمس */
+            updateTouchArea();
+            $await(growAnimate());
+            $await(flowAnimate());
+            $await(moveAnimate());
+            textAnimate().start();
+        }));
+
+        runAsync().start();
+    })();
+    </script>
+</body>
+</html>
